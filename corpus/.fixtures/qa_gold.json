@@ -1,0 +1,73 @@
+{
+  "version": "1.0",
+  "note": "30 题评测集，内容逐条照抄 docs/prdv1.1/14-verification.md §4.2；多轮 5 题见 multi_turn（§4.3，不计入 30 题）。expect_doc_hint 是文档名提示，由 scripts/eval.ts 解析成 documents.id；\"fault\" 表示期望来自 fault_codes 表的结构化语料（没有 documents 行）。本文件必须在 corpus/.fixtures/ 下（以 . 开头的目录被 ingest 跳过），放 corpus/ 根下会被当成一篇待入库的文档。",
+  "items": [
+    { "lang": "de", "question": "Wie lange gilt die Garantie auf den Wechselrichter?", "expect_doc_hint": "warranty.de", "should_refuse": false, "note": "保修 / 保修期限" },
+    { "lang": "de", "question": "Ist der Batteriespeicher in der Garantie enthalten?", "expect_doc_hint": "warranty.de", "should_refuse": false, "note": "保修 / 保修范围" },
+    { "lang": "de", "question": "Wie schließe ich den Wechselrichter am Netz an?", "expect_doc_hint": "install.de", "should_refuse": false, "note": "安装 / 并网" },
+    { "lang": "de", "question": "Was bedeutet Fehlercode E03?", "expect_doc_hint": "fault", "should_refuse": false, "note": "故障码 / E03 含义" },
+    { "lang": "en", "question": "What is the rated output power of the 600W model?", "expect_doc_hint": "spec.en", "should_refuse": false, "note": "参数 / 额定功率" },
+    { "lang": "en", "question": "How long does the warranty last?", "expect_doc_hint": "warranty.en", "should_refuse": false, "note": "保修 / 保修期限" },
+    { "lang": "en", "question": "What are the grid voltage requirements?", "expect_doc_hint": "install.en", "should_refuse": false, "note": "安装 / 并网电压" },
+    { "lang": "en", "question": "What does error F21 mean?", "expect_doc_hint": "fault", "should_refuse": false, "note": "故障码 / F21 含义" },
+    { "lang": "zh", "question": "逆变器的保修期是多久？", "expect_doc_hint": "warranty.zh", "should_refuse": false, "note": "保修 / 保修期限" },
+    { "lang": "zh", "question": "电池在保修范围内吗？", "expect_doc_hint": "warranty.zh", "should_refuse": false, "note": "保修 / 保修范围" },
+    { "lang": "zh", "question": "安装时并网点电压要求是多少？", "expect_doc_hint": "install.zh", "should_refuse": false, "note": "安装 / 并网电压" },
+    { "lang": "zh", "question": "E03 是什么故障？", "expect_doc_hint": "fault", "should_refuse": false, "note": "故障码 / E03 含义" },
+    { "lang": "nl", "question": "Hoe lang is de garantie op de omvormer?", "expect_doc_hint": "warranty.nl", "should_refuse": false, "note": "保修 / 保修期限" },
+    { "lang": "nl", "question": "Zit de batterij ook in de garantie?", "expect_doc_hint": "warranty.nl", "should_refuse": false, "note": "保修 / 保修范围" },
+    { "lang": "nl", "question": "Hoe sluit ik de omvormer aan?", "expect_doc_hint": "install.nl", "should_refuse": false, "note": "安装 / 接线" },
+    { "lang": "nl", "question": "Wat betekent foutcode E07?", "expect_doc_hint": "fault", "should_refuse": false, "note": "故障码 / E07 含义" },
+    { "lang": "es", "question": "¿Cuánto dura la garantía del inversor?", "expect_doc_hint": "warranty.es", "should_refuse": false, "note": "保修 / 保修期限" },
+    { "lang": "es", "question": "¿Cómo conecto el inversor a la red?", "expect_doc_hint": "install.es", "should_refuse": false, "note": "安装 / 并网" },
+    { "lang": "de", "question": "Welcher Wechselrichter ist im Set enthalten?", "expect_doc_hint": "spec.de", "should_refuse": false, "note": "参数 / 套装型号" },
+    { "lang": "zh", "question": "阳台储能的额定功率是多少？", "expect_doc_hint": "spec.zh", "should_refuse": false, "note": "参数 / 额定功率" },
+    { "lang": "nl", "question": "Kunnen jullie 20% korting geven?", "expect_doc_hint": null, "should_refuse": true, "note": "超纲 / 折扣" },
+    { "lang": "de", "question": "Ist euer Produkt besser als der Wettbewerb?", "expect_doc_hint": null, "should_refuse": true, "note": "超纲 / 竞品" },
+    { "lang": "en", "question": "Can you sign a supply contract with us?", "expect_doc_hint": null, "should_refuse": true, "note": "超纲 / 交期承诺" },
+    { "lang": "zh", "question": "能给我打个八折吗？", "expect_doc_hint": null, "should_refuse": true, "note": "超纲 / 折扣" },
+    { "lang": "zh", "question": "你们和华为比哪个好？", "expect_doc_hint": null, "should_refuse": true, "note": "超纲 / 竞品" },
+    { "lang": "de", "question": "Können Sie die Lieferzeit auf 2 Wochen garantieren?", "expect_doc_hint": null, "should_refuse": true, "note": "超纲 / 交期承诺" },
+    { "lang": "es", "question": "¿Pueden darme un precio especial?", "expect_doc_hint": null, "should_refuse": true, "note": "超纲 / 折扣" },
+    { "lang": "en", "question": "What is the stock price of your company?", "expect_doc_hint": null, "should_refuse": true, "note": "超纲 / 股价" },
+    { "lang": "nl", "question": "Geven jullie juridisch advies over contracten?", "expect_doc_hint": null, "should_refuse": true, "note": "超纲 / 法律" },
+    { "lang": "zh", "question": "帮我写一份采购合同的违约条款", "expect_doc_hint": null, "should_refuse": true, "note": "超纲 / 法律" }
+  ],
+  "multi_turn": [
+    {
+      "id": "M1",
+      "lang": "de",
+      "steps": ["Welcher Wechselrichter ist im Set enthalten?", "Und wie viel Watt?"],
+      "expect_doc_hint": "spec.de",
+      "note": "指代拼接"
+    },
+    {
+      "id": "M2",
+      "lang": "en",
+      "steps": ["How long is the warranty?", "And for the battery?"],
+      "expect_doc_hint": "warranty.en",
+      "note": "指代拼接"
+    },
+    {
+      "id": "M3",
+      "lang": "de",
+      "steps": ["Was bedeutet E03?", "Und was soll ich jetzt tun?"],
+      "expect_doc_hint": "fault",
+      "note": "上下文延续"
+    },
+    {
+      "id": "M4",
+      "lang": "zh",
+      "steps": ["保修期多久？", "电池也一样吗？"],
+      "expect_doc_hint": "warranty.zh",
+      "note": "中文指代"
+    },
+    {
+      "id": "M5",
+      "lang": "nl",
+      "steps": ["Hoe sluit ik hem aan?", "En welke spanning?"],
+      "expect_doc_hint": "install.nl",
+      "note": "荷兰语指代"
+    }
+  ]
+}

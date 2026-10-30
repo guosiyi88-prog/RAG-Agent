@@ -1,0 +1,122 @@
+{
+  "title": "沃泰能源故障码表",
+  "version": "1.1",
+  "generated_at": "2026-10-27T15:37:29.242Z",
+  "source": "database:fault_codes (status = published)",
+  "fault_codes": [
+    {
+      "code": "C02",
+      "product_line": "cni",
+      "severity": "info",
+      "desc": {
+        "zh": "电网失电或孤岛保护动作。储能变流器检测到并网点无电压或无频率，按反孤岛要求停止输出并上报该故障码；这是保护动作，不是设备故障。",
+        "en": "Grid loss or anti-islanding trip. The power conversion system detected no voltage or no frequency at the grid connection point, stopped exporting as anti-islanding requires and reported this fault code; this is a protective trip, not an equipment failure.",
+        "de": "Netzausfall oder Auslösung des Inselnetzschutzes. Der Wechselrichter für die Netzeinspeisung hat am Netzanschlusspunkt keine Spannung oder keine Frequenz erkannt, die Einspeisung gemäß Inselnetzschutz beendet und diesen Fehlercode gemeldet; das ist eine Schutzauslösung, kein Gerätedefekt.",
+        "nl": "Netuitval of ingreep van de eilandbeveiliging. De omvormer voor netlevering heeft op het netaansluitpunt geen spanning of geen frequentie gemeten, is volgens de eilandbeveiliging gestopt met leveren en meldde deze foutcode; dit is een beveiligingsingreep, geen defect.",
+        "es": "Pérdida de red o actuación de la protección anti-isla. El inversor de conexión a red no detectó tensión ni frecuencia en el punto de conexión, dejó de entregar según exige la protección anti-isla y registró este código de fallo; es una actuación de protección, no una avería."
+      },
+      "act": {
+        "zh": "1. 确认现场是否停电，向业主说明这是保护动作；2. 电网恢复后等待五分钟，设备会自动重新并网；3. 电网正常但故障码不消失时，测量并网点电压与频率；4. 仍无法自动并网时提交工单并附并网柜指示灯照片。",
+        "en": "1. Confirm whether the site has a power cut and explain to the owner that this is a protective trip; 2. after the grid returns, wait five minutes and the unit reconnects automatically; 3. if the grid is normal but the code stays, measure voltage and frequency at the grid connection point; 4. if automatic reconnection still fails, raise a ticket with a photo of the combiner cabinet indicators.",
+        "de": "1. Prüfen, ob am Standort ein Stromausfall vorliegt, und dem Betreiber erklären, dass es sich um eine Schutzauslösung handelt; 2. nach Rückkehr des Netzes fünf Minuten warten, dann speist das Gerät automatisch wieder ein; 3. ist das Netz in Ordnung, der Fehlercode bleibt aber bestehen, Spannung und Frequenz am Netzanschlusspunkt messen; 4. gelingt die automatische Einspeisung weiterhin nicht, ein Ticket mit Foto der Anzeigen im Einspeiseschrank anlegen.",
+        "nl": "1. Controleer of er op de locatie een stroomstoring is en leg de eigenaar uit dat dit een beveiligingsingreep is; 2. wacht vijf minuten nadat het net terug is, dan levert het toestel automatisch weer; 3. is het net in orde maar blijft de foutcode staan, meet dan spanning en frequentie op het netaansluitpunt; 4. lukt automatisch opnieuw aansluiten niet, maak dan een ticket aan met een foto van de indicatoren in de verdeelkast.",
+        "es": "1. Confirme si el emplazamiento sufre un corte de suministro y explique al propietario que es una actuación de protección; 2. cuando vuelve la red, espere cinco minutos y el equipo se reconecta solo; 3. si la red es correcta pero el código permanece, mida tensión y frecuencia en el punto de conexión; 4. si la reconexión automática sigue fallando, abra un ticket con una foto de los indicadores del cuadro de conexión."
+      }
+    },
+    {
+      "code": "E03",
+      "product_line": "balcony",
+      "severity": "warn",
+      "desc": {
+        "zh": "并网点电压超出允许范围。系统检测到电网电压长时间高于二百五十三伏或低于二百零七伏，停止向电网送电并上报该故障码，常见于光伏装机密集的台区。",
+        "en": "The voltage at the grid connection point is outside the permitted range. The system detected grid voltage above 253 V or below 207 V for a sustained period, stopped feeding the grid and reported this fault code; it occurs mainly in areas with dense photovoltaic penetration.",
+        "de": "Die Spannung am Netzanschlusspunkt liegt außerhalb des zulässigen Bereichs. Das System hat über längere Zeit mehr als 253 V oder weniger als 207 V erkannt, die Einspeisung beendet und diesen Fehlercode gemeldet; er tritt vor allem in Gebieten mit dichter Photovoltaik auf.",
+        "nl": "De spanning op het netaansluitpunt valt buiten het toegestane bereik. Het systeem heeft langdurig meer dan 253 V of minder dan 207 V gemeten, de teruglevering gestopt en deze foutcode gemeld; dit komt vooral voor in gebieden met veel fotovoltaïek.",
+        "es": "La tensión en el punto de conexión está fuera del rango permitido. El sistema detectó durante un periodo prolongado más de 253 V o menos de 207 V, dejó de entregar a la red y registró este código de fallo; aparece sobre todo en zonas con mucha fotovoltaica."
+      },
+      "act": {
+        "zh": "1. 用万用表测量并网点空载电压并记录；2. 检查并网电缆端子是否松动、线径是否符合手册；3. 电压持续高于二百五十三伏时联系电网公司调整变压器分接头，不要修改设备参数绕过保护；4. 处理后复位并观察十分钟，仍报同一故障码时提交工单。",
+        "en": "1. Measure the open-circuit voltage at the grid connection point and write it down; 2. check that the grid cable terminals are tight and that the conductor size matches the manual; 3. if the voltage stays above 253 V, ask the grid operator to adjust the transformer tap instead of changing device parameters to bypass protection; 4. reset the unit and observe for ten minutes, and raise a ticket if the same code returns.",
+        "de": "1. Leerlaufspannung am Netzanschlusspunkt messen und notieren; 2. prüfen, ob die Klemmen des Netzkabels fest sitzen und der Querschnitt dem Handbuch entspricht; 3. liegt die Spannung dauerhaft über 253 V, den Netzbetreiber um Anpassung der Transformatoranzapfung bitten, statt den Schutz über Geräteparameter zu umgehen; 4. danach zurücksetzen und zehn Minuten beobachten; erscheint derselbe Fehlercode, ein Ticket anlegen.",
+        "nl": "1. Meet de nullastspanning op het netaansluitpunt en noteer die; 2. controleer of de klemmen van de netkabel vastzitten en of de doorsnede met de handleiding overeenkomt; 3. blijft de spanning boven 253 V, vraag de netbeheerder dan de aftakking van de transformator aan te passen in plaats van de beveiliging via toestelparameters te omzeilen; 4. reset daarna en observeer tien minuten; komt dezelfde foutcode terug, maak dan een ticket aan.",
+        "es": "1. Mida la tensión en vacío en el punto de conexión y anótela; 2. compruebe que los bornes del cable de red estén apretados y que la sección coincida con el manual; 3. si la tensión sigue por encima de 253 V, pida al operador de red que ajuste la toma del transformador en lugar de modificar parámetros del equipo; 4. después reinicie y observe diez minutos, y abra un ticket si el mismo código reaparece."
+      }
+    },
+    {
+      "code": "E07",
+      "product_line": "balcony",
+      "severity": "fatal",
+      "desc": {
+        "zh": "直流侧对地绝缘阻抗低于一兆欧。系统在并网前检测到绝缘异常，拒绝并网并上报该故障码，常见原因是组串接头受潮、电缆破损或组件进水。",
+        "en": "Insulation resistance from the DC side to earth is below one megaohm. The system detected the insulation fault before connecting to the grid, refused to connect and reported this fault code; typical causes are damp string connectors, damaged cable or water inside a module.",
+        "de": "Der Isolationswiderstand der Gleichstromseite gegen Erde liegt unter einem Megaohm. Das System hat den Isolationsfehler vor der Netzanmeldung erkannt, die Netzanmeldung abgelehnt und diesen Fehlercode gemeldet; typische Ursachen sind feuchte String-Steckverbinder, beschädigte Kabel oder Wasser im Modul.",
+        "nl": "De isolatieweerstand van de gelijkstroomzijde naar aarde is lager dan één megaohm. Het systeem heeft de isolatiefout vóór de netregistratie gedetecteerd, de aansluiting geweigerd en deze foutcode gemeld; typische oorzaken zijn vochtige stringstekkers, beschadigde kabel of water in een module.",
+        "es": "La resistencia de aislamiento del lado de continua respecto a tierra es inferior a un megaohmio. El sistema detectó el fallo antes de conectar a la red, rechazó la conexión y registró este código de fallo; las causas habituales son conectores de string húmedos, cable dañado o agua dentro de un módulo."
+      },
+      "act": {
+        "zh": "1. 断开交流与直流开关，等待指示灯熄灭；2. 用兆欧表逐串测量组串对地阻抗；3. 隔离低于一兆欧的组串，检查接头是否受潮、电缆是否破损；4. 处理完成后复位并等待自检通过，仍报同一故障码时提交工单并附测量记录。",
+        "en": "1. Open the AC and DC switches and wait for the indicators to go out; 2. measure each string to earth with an insulation tester; 3. isolate strings below one megaohm and check connectors for moisture and cable for damage; 4. after the repair, reset the unit and wait for the self-test to pass, and raise a ticket with the measurements if the same code returns.",
+        "de": "1. Wechsel- und Gleichstromschalter öffnen und warten, bis die Anzeigen erlöschen; 2. jeden String mit einem Isolationsmessgerät gegen Erde messen; 3. Strings unter einem Megaohm abschalten und Steckverbinder auf Feuchtigkeit sowie Kabel auf Schäden prüfen; 4. nach der Reparatur zurücksetzen und den Selbsttest abwarten; erscheint derselbe Fehlercode, ein Ticket mit den Messwerten anlegen.",
+        "nl": "1. Open de wisselstroom- en gelijkstroomschakelaar en wacht tot de indicatoren doven; 2. meet elke string tegen aarde met een isolatiemeter; 3. schakel strings onder één megaohm af en controleer stekkers op vocht en kabel op schade; 4. reset het toestel na de reparatie en wacht de zelftest af; komt dezelfde foutcode terug, maak dan een ticket aan met de meetwaarden.",
+        "es": "1. Abra los interruptores de alterna y de continua y espere a que los indicadores se apaguen; 2. mida cada string contra tierra con un medidor de aislamiento; 3. aísle los strings por debajo de un megaohmio y revise la humedad de los conectores y el estado del cable; 4. tras la reparación, reinicie y espere a que pase la autocomprobación; si el mismo código reaparece, abra un ticket con las mediciones."
+      }
+    },
+    {
+      "code": "E11",
+      "product_line": "residential",
+      "severity": "warn",
+      "desc": {
+        "zh": "电池过压保护。充电末端检测到单体电压高于三点六五伏，系统停止充电并上报该故障码，通常发生在电池长时间满电搁置或低温充电时。",
+        "en": "Battery overvoltage protection. A cell voltage above 3.65 V was detected at the end of charging, so the system stopped charging and reported this fault code; it usually appears when the battery is left full for a long time or is charged at low temperature.",
+        "de": "Überspannungsschutz des Batteriespeichers. Am Ende des Ladevorgangs wurde eine Zellspannung über 3,65 V erkannt, woraufhin das System den Ladevorgang beendet und diesen Fehlercode gemeldet hat; er tritt meist auf, wenn der Batteriespeicher lange voll steht oder bei niedriger Temperatur geladen wird.",
+        "nl": "Overspanningsbeveiliging van de batterij. Aan het einde van het laden is een celspanning boven 3,65 V gemeten, waarna het systeem het laden stopte en deze foutcode meldde; dit gebeurt meestal als de batterij lang vol blijft staan of bij lage temperatuur wordt geladen.",
+        "es": "Protección contra sobretensión de la batería. Al final de la carga se detectó una tensión de celda superior a 3,65 V, por lo que el sistema detuvo la carga y registró este código de fallo; suele aparecer cuando la batería permanece llena mucho tiempo o se carga a baja temperatura."
+      },
+      "act": {
+        "zh": "1. 在调试页面读取单体最高电压与电池温度；2. 环境温度低于零摄氏度时暂停充电，等待回温；3. 断开电池开关五分钟后再闭合，等待自检；4. 反复出现时提交工单并附单体电压截图。",
+        "en": "1. Read the highest cell voltage and the battery temperature on the commissioning page; 2. if the ambient temperature is below zero degrees Celsius, pause charging until the battery warms up; 3. open the battery switch for five minutes, close it again and wait for the self-test; 4. if the code returns, raise a ticket with a screenshot of the cell voltages.",
+        "de": "1. Höchste Zellspannung und Batterietemperatur auf der Inbetriebnahmeseite ablesen; 2. liegt die Umgebungstemperatur unter null Grad Celsius, den Ladevorgang pausieren, bis sich der Batteriespeicher erwärmt hat; 3. den Batterieschalter fünf Minuten öffnen, wieder schließen und den Selbsttest abwarten; 4. erscheint der Fehlercode erneut, ein Ticket mit Screenshot der Zellspannungen anlegen.",
+        "nl": "1. Lees de hoogste celspanning en de batterijtemperatuur af op de inbedrijfstellingspagina; 2. is de omgevingstemperatuur lager dan nul graden Celsius, pauzeer het laden tot de batterij op temperatuur is; 3. open de batterijschakelaar vijf minuten, sluit hem weer en wacht de zelftest af; 4. komt de foutcode terug, maak dan een ticket aan met een schermafbeelding van de celspanningen.",
+        "es": "1. Lea la tensión de celda más alta y la temperatura de la batería en la página de puesta en marcha; 2. si la temperatura ambiente está por debajo de cero grados Celsius, pause la carga hasta que la batería se tempere; 3. abra el interruptor de la batería cinco minutos, vuelva a cerrarlo y espere la autocomprobación; 4. si el código reaparece, abra un ticket con una captura de las tensiones de celda."
+      }
+    },
+    {
+      "code": "F05",
+      "product_line": "balcony",
+      "severity": "warn",
+      "desc": {
+        "zh": "逆变器过温降额。散热片被遮挡、环境温度过高或长时间满功率运行会让机内温度超过八十五摄氏度，系统先降额运行，仍超温则停机并上报该故障码。",
+        "en": "Inverter overtemperature derating. A blocked heat sink, high ambient temperature or long operation at full power pushes the internal temperature above 85 degrees Celsius; the system derates first and shuts down if the temperature stays high, reporting this fault code.",
+        "de": "Übertemperatur am Wechselrichter mit Leistungsreduktion. Ein verdeckter Kühlkörper, hohe Umgebungstemperatur oder langer Betrieb bei voller Leistung treiben die Innentemperatur über 85 Grad Celsius; das System reduziert zuerst die Leistung und schaltet bei anhaltender Hitze ab, wobei dieser Fehlercode gemeldet wird.",
+        "nl": "Overtemperatuur bij de omvormer met terugregeling. Een afgedekte koelplaat, een hoge omgevingstemperatuur of langdurig draaien op vol vermogen brengt de interne temperatuur boven 85 graden Celsius; het systeem regelt eerst terug en schakelt uit als de temperatuur hoog blijft, met deze foutcode.",
+        "es": "Sobrecalentamiento del inversor con reducción de potencia. Un disipador tapado, una temperatura ambiente alta o el funcionamiento prolongado a plena potencia elevan la temperatura interna por encima de 85 grados Celsius; el sistema reduce primero la potencia y se apaga si el calor continúa, registrando este código de fallo."
+      },
+      "act": {
+        "zh": "1. 检查设备周围是否堆放杂物、是否被阳光直射；2. 清理散热片灰尘并保证顶部三十厘米无遮挡；3. 断开交流开关，等待机内温度降到四十摄氏度以下；4. 复位后观察输出功率曲线，再次出现时提交工单。",
+        "en": "1. Check that nothing is stacked around the unit and that it is not in direct sunlight; 2. clean dust off the heat sink and keep thirty centimetres clear above the unit; 3. open the AC switch and wait until the internal temperature drops below 40 degrees Celsius; 4. reset the unit and watch the output power curve, and raise a ticket if the code returns.",
+        "de": "1. Prüfen, ob um das Gerät etwas gelagert wird und ob es direkter Sonne ausgesetzt ist; 2. Staub vom Kühlkörper entfernen und dreißig Zentimeter über dem Gerät frei halten; 3. den Wechselstromschalter öffnen und warten, bis die Innentemperatur unter 40 Grad Celsius fällt; 4. zurücksetzen und den Verlauf der Ausgangsleistung beobachten; tritt der Fehlercode erneut auf, ein Ticket anlegen.",
+        "nl": "1. Controleer of er spullen rond het toestel staan en of het in direct zonlicht hangt; 2. verwijder stof van de koelplaat en houd dertig centimeter boven het toestel vrij; 3. open de wisselstroomschakelaar en wacht tot de interne temperatuur onder 40 graden Celsius zakt; 4. reset het toestel en bekijk de curve van het uitgangsvermogen; komt de foutcode terug, maak dan een ticket aan.",
+        "es": "1. Compruebe que no hay objetos apilados alrededor del equipo y que no recibe sol directo; 2. limpie el polvo del disipador y deje treinta centímetros libres por encima; 3. abra el interruptor de alterna y espere a que la temperatura interna baje de 40 grados Celsius; 4. reinicie y observe la curva de potencia de salida, y abra un ticket si el código reaparece."
+      }
+    },
+    {
+      "code": "F21",
+      "product_line": "residential",
+      "severity": "warn",
+      "desc": {
+        "zh": "电池通讯超时。逆变器在规定时间内没有收到电池管理系统的心跳报文，系统停止充放电并上报该故障码，常见原因是通讯线松动、地址拨码重复或电池休眠。",
+        "en": "Battery communication timeout. The inverter received no heartbeat message from the battery management system within the allowed time, stopped charging and discharging and reported this fault code; common causes are a loose communication cable, duplicate address switches or a battery in sleep mode.",
+        "de": "Zeitüberschreitung in der Batteriekommunikation. Der Wechselrichter hat innerhalb der zulässigen Zeit keine Heartbeat-Nachricht des Batteriemanagements erhalten, Laden und Entladen gestoppt und diesen Fehlercode gemeldet; häufige Ursachen sind ein loses Kommunikationskabel, doppelt gesetzte Adressschalter oder ein Batteriespeicher im Ruhezustand.",
+        "nl": "Time-out in de batterijcommunicatie. De omvormer heeft binnen de toegestane tijd geen heartbeat-bericht van het batterijbeheersysteem ontvangen, is gestopt met laden en ontladen en meldde deze foutcode; veelvoorkomende oorzaken zijn een losse communicatiekabel, dubbele adresschakelaars of een batterij in slaapstand.",
+        "es": "Tiempo de espera agotado en la comunicación con la batería. El inversor no recibió el mensaje de latido del sistema de gestión de batería dentro del plazo permitido, detuvo la carga y la descarga y registró este código de fallo; las causas habituales son un cable de comunicación flojo, direcciones duplicadas en los conmutadores o una batería en reposo."
+      },
+      "act": {
+        "zh": "1. 检查电池与逆变器之间的通讯线两端是否插紧；2. 确认同一条总线上没有重复的地址拨码；3. 长按电池电源键唤醒电池，观察指示灯；4. 断开电池开关三十秒后重新闭合，等待自检；5. 仍报同一故障码时提交工单并附通讯线型号与拨码照片。",
+        "en": "1. Check that both ends of the communication cable between battery and inverter are fully seated; 2. make sure no address switch is set twice on the same bus; 3. press and hold the battery power key to wake the battery and watch the indicators; 4. open the battery switch for thirty seconds, close it again and wait for the self-test; 5. if the same code returns, raise a ticket with the cable type and a photo of the address switches.",
+        "de": "1. Prüfen, ob beide Enden des Kommunikationskabels zwischen Batteriespeicher und Wechselrichter fest sitzen; 2. sicherstellen, dass auf demselben Bus keine Adresse doppelt gesetzt ist; 3. die Einschalttaste des Batteriespeichers gedrückt halten, um ihn zu wecken, und die Anzeigen beobachten; 4. den Batterieschalter dreißig Sekunden öffnen, wieder schließen und den Selbsttest abwarten; 5. erscheint derselbe Fehlercode, ein Ticket mit Kabeltyp und Foto der Adressschalter anlegen.",
+        "nl": "1. Controleer of beide uiteinden van de communicatiekabel tussen batterij en omvormer goed vastzitten; 2. zorg dat geen adres dubbel is ingesteld op dezelfde bus; 3. houd de aan/uit-toets van de batterij ingedrukt om hem te wekken en let op de indicatoren; 4. open de batterijschakelaar dertig seconden, sluit hem weer en wacht de zelftest af; 5. komt dezelfde foutcode terug, maak dan een ticket aan met het kabeltype en een foto van de adresschakelaars.",
+        "es": "1. Compruebe que ambos extremos del cable de comunicación entre batería e inversor estén bien insertados; 2. asegúrese de que no haya una dirección repetida en el mismo bus; 3. mantenga pulsada la tecla de encendido de la batería para despertarla y observe los indicadores; 4. abra el interruptor de la batería durante treinta segundos, vuelva a cerrarlo y espere la autocomprobación; 5. si el mismo código reaparece, abra un ticket con el tipo de cable y una foto de los conmutadores de dirección."
+      }
+    }
+  ]
+}

@@ -1,0 +1,197 @@
+<!doctype html>
+<!-- 坐席端页面（`11-ui-console.md`；工单 `07-console-and-security` #02 前端一半的落地文件）。
+     三条**刻意**决定，写在这里以免后来者当成漏做：
+     1. 文案全部硬编码中文，整页没有 `data-i18n`：坐席端是内部工具，`12-i18n.md` 的 key 表只覆盖用户端，
+        PRD 已把它列为已知限制。因此本文件也**不产生**任何 `console.*` 文案 key。
+     2. 样式走外部 `/assets/console.css`，不内联。`09-ui-tokens.md` §9 的"首屏 CSS 内联 ≤15KB"是给
+        9:16 手机框设计的（首屏像素就是转化率）；坐席端是桌面内网工具，让 CSS 走资源路由才能被
+        `src/api/assets.ts` 的 MIME 表与 `tests/console-web.test.ts` 覆盖。
+     3. 共享令牌与基础组件直接链 `/assets/app.css`（09 §6：两端共用一套令牌，色系分家），
+        `console.css` 只写坐席端布局，避免把 174 行令牌复制第二份。
+     本文件不含任何业务逻辑：脚本只有末尾那一个 module 引用。 -->
+<html lang="zh">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="app-version" content="0.1.0">
+<title>沃泰客服台</title>
+<link rel="stylesheet" href="/assets/app.css">
+<link rel="stylesheet" href="/assets/console.css">
+</head>
+<body data-app="console" data-view="queue" data-auth="missing">
+
+<!-- 图标精灵：只保留坐席端用得到的 7 个 Lucide path（24×24 / stroke-width 1.75 / currentColor）。
+     09 §5 禁止 emoji 当图标，也禁止位图；`.icon` 的笔触样式来自 app.css。 -->
+<svg class="sprite" aria-hidden="true" focusable="false">
+  <symbol id="i-chevron-left" viewBox="0 0 24 24"><path d="m15 18-6-6 6-6"/></symbol>
+  <symbol id="i-x" viewBox="0 0 24 24"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></symbol>
+  <symbol id="i-ticket" viewBox="0 0 24 24"><path d="M2 9a3 3 0 0 1 0 6v2a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2v-2a3 3 0 0 1 0-6V7a2 2 0 0 0-2-2H4a2 2 0 0 0-2 2Z"/><path d="M13 5v2"/><path d="M13 17v2"/><path d="M13 11v2"/></symbol>
+  <symbol id="i-alert" viewBox="0 0 24 24"><path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3"/><path d="M12 9v4"/><path d="M12 17h.01"/></symbol>
+  <symbol id="i-chart" viewBox="0 0 24 24"><path d="M3 3v16a2 2 0 0 0 2 2h16"/><path d="M18 17V9"/><path d="M13 17V5"/><path d="M8 17v-3"/></symbol>
+  <symbol id="i-inbox" viewBox="0 0 24 24"><path d="M22 12h-6l-2 3h-4l-2-3H2"/><path d="M5.45 5.11 2 12v6a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2v-6l-3.45-6.89A2 2 0 0 0 16.76 4H7.24a2 2 0 0 0-1.79 1.11z"/></symbol>
+  <symbol id="i-message-circle" viewBox="0 0 24 24"><path d="M7.9 20A9 9 0 1 0 4 16.1L2 22Z"/></symbol>
+  <symbol id="i-book" viewBox="0 0 24 24"><path d="M12 7v14"/><path d="M3 18a1 1 0 0 1-1-1V4a1 1 0 0 1 1-1h5a4 4 0 0 1 4 4 4 4 0 0 1 4-4h5a1 1 0 0 1 1 1v13a1 1 0 0 1-1 1h-6a3 3 0 0 0-3 3 3 3 0 0 0-3-3z"/></symbol>
+</svg>
+
+<div class="shell">
+  <header class="topbar">
+    <span class="topbar-brand">沃泰 客服台</span>
+    <span class="topbar-spacer"></span>
+    <!-- 1280 以下不是"能凑合"，是"引用栏会消失"，所以给一句明确提示（11 §6 最小支持 1280×720）。 -->
+    <span class="narrow-hint">请放大窗口至 1280 宽以上</span>
+    <span class="topbar-agent" id="agent-name">坐席</span>
+    <!-- 退出：清掉 localStorage 里的会话票据并通知服务端吊销，这里是唯一的清理入口
+         （票据不进 URL、不进日志）。 -->
+    <button type="button" class="btn btn-ghost btn-sm" id="btn-signout">退出登录</button>
+  </header>
+
+  <!-- 导航按角色渲染（`09#05`）。`data-nav` 是稳定键，显隐由 `console-admin-shell.js` 的
+      `visibleNavItems(role)` 决定，角色只从 `GET /api/console/me` 来（绝不从 localStorage 猜）。
+      静态层把四个管理项都写成 `hidden`：角色还没回来之前，`agent` 不会看到一闪而过的入口。
+      **隐藏只避免"点了才发现 403"的挫败感，不是安全措施** —— 权限在接口层
+      （`src/api/roles.ts` 的 `ROUTE_MIN_ROLE`），藏起来不等于拦住。
+      `09#05` 起知识库也是真面板（最低角色 `lead`），所以它不再是 `aria-disabled` 的死位；
+      `agent` 连它都看不到 —— 一个点开必然 403 的入口，灰着它等于先给人希望再收回。 -->
+  <aside class="nav" aria-label="主导航">
+    <button type="button" class="nav-item is-active" data-nav="tickets" aria-current="page">
+      <svg class="icon" aria-hidden="true"><use href="#i-ticket"></use></svg>
+      <span>工单</span>
+    </button>
+    <button type="button" class="nav-item" data-nav="kb" hidden>
+      <svg class="icon" aria-hidden="true"><use href="#i-book"></use></svg>
+      <span>知识库</span>
+    </button>
+    <button type="button" class="nav-item" data-nav="faults" hidden>
+      <svg class="icon" aria-hidden="true"><use href="#i-alert"></use></svg>
+      <span>故障卡</span>
+    </button>
+    <button type="button" class="nav-item" data-nav="board" hidden>
+      <svg class="icon" aria-hidden="true"><use href="#i-chart"></use></svg>
+      <span>看板</span>
+    </button>
+    <button type="button" class="nav-item" data-nav="reports" hidden>
+      <svg class="icon" aria-hidden="true"><use href="#i-inbox"></use></svg>
+      <span>待审反馈</span>
+    </button>
+    <!-- FAQ 草稿（`09#06` / A5）：未命中池 + 草稿审批。最低角色 `lead`（通过要 `admin`）。
+         与「待审反馈」是一对：那边补**故障码**，这边补**答案**。 -->
+    <button type="button" class="nav-item" data-nav="faq" hidden>
+      <svg class="icon" aria-hidden="true"><use href="#i-message-circle"></use></svg>
+      <span>FAQ 草稿</span>
+    </button>
+    <div class="nav-foot" aria-hidden="true">
+      <div>J / K 上下移动</div>
+      <div>Enter 打开 · Esc 返回</div>
+      <div>Ctrl/Cmd + Enter 发送</div>
+    </div>
+  </aside>
+
+  <!-- 队列 / 详情两个视图由 console.js 渲染（11 §1 的 DOM 契约）。这里留空是有意的：
+       静态骨架里放一份队列，JS 重渲染时会闪一下旧内容，还会让人误以为那是对真实数据的渲染。 -->
+  <main class="work" id="work"></main>
+
+  <!-- 管理面板的唯一挂载点（`09#05`）：知识库 / 故障卡 / 看板 / 待审反馈的模块**懒加载**，切过去才 `import()`，
+       首屏不下载任何管理代码。与 `#work` 占同一个网格格（`grid-area:work`），面板打开时
+       `body[data-panel="admin"]` 让 `.work` 让位 —— 队列与详情的 DOM 不动，切回工单不用重建。 -->
+  <section class="admin-panel" id="admin-panel" aria-label="管理面板" hidden></section>
+
+</div>
+
+<noscript>
+  <div class="noscript">坐席台是原生 ES module 单页（无构建步骤），需要启用 JavaScript。</div>
+</noscript>
+
+<div class="toast" id="toast" role="status" hidden></div>
+
+<!-- 登录闸门：首次打开 / 401 之后都要经过它。默认 hidden，由 console.js 按"有没有会话票据"决定显隐；
+     口令是 password 类型，会话票据**只**写 localStorage —— 不写 URL、不写日志、不写 aria-label。
+     账号就是 `staff.email`（演示账号见 README「坐席端」一节，部署前必须改口令）。 -->
+<div class="gate" id="gate" hidden>
+  <form class="gate-card" id="gate-form" novalidate>
+    <h1 class="gate-title">沃泰客服台</h1>
+    <p class="gate-hint">请用坐席账号登录。会话票据只存在本机浏览器，不会写进 URL 或日志。</p>
+    <label class="gate-label" for="gate-email">邮箱</label>
+    <input class="input" id="gate-email" type="email" autocomplete="username" spellcheck="false"
+      placeholder="zhang.wei@wotai.demo">
+    <label class="gate-label" for="gate-password">口令</label>
+    <input class="input" id="gate-password" type="password" autocomplete="current-password" placeholder="口令">
+    <p class="gate-error" id="gate-error" role="alert" hidden></p>
+    <button class="btn btn-primary" id="gate-submit" type="submit">登录</button>
+  </form>
+</div>
+
+<!-- 引用原文：桌面用 modal（11 §3.2 明确规定"不是抽屉"）。结构常驻，内容由 console.js 填。 -->
+<div class="cmodal" id="cite-modal" hidden>
+  <div class="cmodal-card" role="dialog" aria-modal="true" aria-labelledby="cite-title">
+    <div class="cmodal-head">
+      <h2 class="cmodal-title" id="cite-title">引用</h2>
+      <button class="btn btn-ghost btn-sm" type="button" data-act="cite-close" aria-label="关闭">
+        <svg class="icon" aria-hidden="true"><use href="#i-x"></use></svg>
+      </button>
+    </div>
+    <div class="cmodal-body" id="cite-body"></div>
+  </div>
+</div>
+
+<!-- 关单结论：结论 ≥10 字否则"确认关单"禁用（工单 07#02 第四条）。用模态而不是行内输入，
+     是因为关单不可逆，需要一个"停一下、读完提示再点"的动作。 -->
+<div class="cmodal" id="resolve-modal" hidden>
+  <div class="cmodal-card" role="dialog" aria-modal="true" aria-labelledby="resolve-title">
+    <div class="cmodal-head">
+      <h2 class="cmodal-title" id="resolve-title">关单结论</h2>
+      <button class="btn btn-ghost btn-sm" type="button" data-act="resolve-cancel" aria-label="取消">
+        <svg class="icon" aria-hidden="true"><use href="#i-x"></use></svg>
+      </button>
+    </div>
+    <div class="cmodal-body">
+      <p class="gate-hint">写清"怎么解决的"。至少 10 字，复盘时其他坐席与客户都会读到。</p>
+      <textarea class="input" id="resolve-text" rows="4" maxlength="500"
+        placeholder="例：已电话指导复位，观察 10 分钟未复现"></textarea>
+      <div class="cmodal-bar">
+        <span class="gate-error" id="resolve-count">还差 10 字</span>
+        <button class="btn btn-ghost" type="button" data-act="resolve-cancel">取消</button>
+        <button class="btn btn-primary" type="button" id="resolve-confirm" data-act="resolve-confirm" disabled>确认关单</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- 转 FAQ 草稿（`09#06` / A5）：把"AI 答不出、人工已答"的问题写成一条 `kb_drafts`。
+     用模态而不是行内：它是**写知识**的动作，会经主管审批进入用户拿到的答案里，需要一次"停一下"。
+     语言默认取本单会话语言（`conversations.lang`）—— 猜错语言会让答案落进另一路召回，
+     症状是"审批通过了但用户问同样的问题还是答不出"，所以下拉是显式可见的。 -->
+<div class="cmodal" id="faq-modal" hidden>
+  <div class="cmodal-card" role="dialog" aria-modal="true" aria-labelledby="faq-title">
+    <div class="cmodal-head">
+      <h2 class="cmodal-title" id="faq-title">转 FAQ 草稿</h2>
+      <button class="btn btn-ghost btn-sm" type="button" data-act="faq-cancel" aria-label="取消">
+        <svg class="icon" aria-hidden="true"><use href="#i-x"></use></svg>
+      </button>
+    </div>
+    <div class="cmodal-body">
+      <p class="gate-hint">把这次人工答出来的结论写成一条知识草稿。主管通过后会切块进索引，下次同类问题 AI 直接答得出。</p>
+      <label class="gate-label" for="faq-question">问题</label>
+      <textarea class="input" id="faq-question" rows="2" maxlength="500"></textarea>
+      <label class="gate-label" for="faq-lang">语言</label>
+      <select class="input" id="faq-lang">
+        <option value="zh">中文</option>
+        <option value="en">English</option>
+        <option value="de">Deutsch</option>
+        <option value="nl">Nederlands</option>
+        <option value="es">Español</option>
+      </select>
+      <label class="gate-label" for="faq-answer">答案</label>
+      <textarea class="input" id="faq-answer" rows="5" maxlength="4000"
+        placeholder="写用户能直接看懂的一段答案（至少 10 字）"></textarea>
+      <div class="cmodal-bar">
+        <span class="gate-error" id="faq-count">答案至少 10 字</span>
+        <button class="btn btn-ghost" type="button" data-act="faq-cancel">取消</button>
+        <button class="btn btn-primary" type="button" id="faq-submit" data-act="faq-submit" disabled>生成草稿</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script type="module" src="/assets/console.js"></script>
+</body>
+</html>

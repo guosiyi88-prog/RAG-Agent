@@ -1,0 +1,255 @@
+/* 坐席端布局（`11-ui-console.md` §6）与队列/详情组件。
+ *
+ * 令牌与基础组件（`.btn` / `.input` / `.badge` / `.cite` / `.toast` / `.sprite` / `.icon`）来自
+ * `/assets/app.css`（`09-ui-tokens.md` §6：两端共用一套令牌，色系分家）。本文件只写坐席端独有的东西：
+ * 不复制令牌、不出现裸色值 —— 所有底色都由 `var(--c-*)` / `var(--u-scrim)` 混出来。
+ *
+ * 尺寸约束（工单 07#02 第七条）：
+ *   1440×810 三栏全展开，`发送` / `关单` 不用滚动就可见；
+ *   1280×720 最小可用、不出现横向滚动；
+ *   <1280 右栏（引用）让位，因为它在 1280 以下会把中栏挤到 420px 以下，"能点"变"读不了"。
+ */
+
+/* ───────────── 骨架：56px 顶栏 + 240px 导航 + 工作区 ───────────── */
+
+body[data-app="console"]{height:100dvh;overflow:hidden}
+body[data-app="console"] .shell{display:grid;grid-template-columns:var(--nav-w) 1fr;grid-template-rows:56px 1fr;grid-template-areas:"top top" "nav work";height:100dvh;min-height:0}
+
+.topbar{grid-area:top;display:flex;align-items:center;gap:var(--s3);min-width:0;padding:0 var(--s4);background:var(--c-primary);color:var(--c-on-primary)}
+.topbar-brand{font-family:var(--font-display);font-size:var(--t-title);font-weight:700;white-space:nowrap}
+.topbar-spacer{flex:1 1 auto}
+.topbar-agent{font-size:var(--t-sm);font-weight:600;max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+/* 顶栏是深色底，`.btn-ghost` 的浅色边框在这里看不见，要按当前前景色重混 */
+body[data-app="console"] .topbar .btn-ghost{color:var(--c-on-primary);border-color:color-mix(in srgb, var(--c-on-primary) 40%, transparent)}
+.narrow-hint{display:none;font-size:var(--t-cap);font-weight:600;color:var(--c-st-open)}
+
+.nav{grid-area:nav;display:flex;flex-direction:column;gap:var(--s1);min-height:0;overflow-y:auto;padding:var(--s3) var(--s2);background:var(--c-primary);color:var(--c-on-primary)}
+.nav-item{display:flex;align-items:center;gap:var(--s2);width:100%;padding:var(--s3);border:0;border-radius:var(--r-md);background:transparent;color:inherit;font-size:var(--t-sm);font-weight:600;text-align:left}
+.nav-item.is-active{background:color-mix(in srgb, var(--c-on-primary) 14%, transparent)}
+/* 当前没有导航项用到它：`09#05` 之后四个管理项都是真入口（`DISABLED_NAV` 已清空）。
+   留着是因为骨架仍然支持"看得见但不可用"的占位 —— 将来加一个键时不必再补样式。 */
+.nav-item[aria-disabled="true"]{opacity:.45;cursor:not-allowed}
+.nav-item:focus-visible{outline:2px solid var(--c-on-primary);outline-offset:-2px}
+.nav-foot{margin-top:auto;padding:var(--s3) var(--s2) 0;border-top:1px solid color-mix(in srgb, var(--c-on-primary) 18%, transparent);font-size:var(--t-cap);line-height:var(--lh-body);color:color-mix(in srgb, var(--c-on-primary) 72%, transparent)}
+
+/* `.work` 自己不出滚动条：队列与详情各自管自己的滚动，页面级滚动会把"发送"推出视口 */
+.work{grid-area:work;min-width:0;min-height:0;overflow:hidden;background:var(--c-bg)}
+
+/* ───────────── 队列 ───────────── */
+
+.queue{display:flex;flex-direction:column;height:100%;min-height:0;padding:var(--s4);gap:var(--s3)}
+.queue-toolbar{display:flex;align-items:center;flex-wrap:wrap;gap:var(--s2)}
+.tabs{display:flex;gap:var(--s1);padding:2px;border:1px solid var(--c-border);border-radius:var(--r-md);background:var(--c-surface)}
+.tab-btn{min-height:32px;padding:0 var(--s3);border:0;border-radius:var(--r-sm);background:transparent;color:var(--c-muted);font-size:var(--t-sm);font-weight:600}
+.tab-btn[aria-selected="true"]{background:var(--c-primary);color:var(--c-on-primary)}
+.c-select{width:auto;min-width:112px;min-height:36px;padding:0 var(--s2)}
+.c-search{flex:1 1 200px;min-width:160px;min-height:36px;padding:0 var(--s3)}
+.queue-hint{font-size:var(--t-cap);color:var(--c-muted)}
+.queue-status{font-size:var(--t-sm);line-height:var(--lh-tight);overflow-wrap:anywhere}
+.queue-status:empty{display:none}
+.queue-status.is-error{padding:var(--s2) var(--s3);border-left:3px solid var(--c-st-sla);background:color-mix(in srgb, var(--c-st-sla) 8%, transparent);color:var(--c-text)}
+.queue-status.is-loading{color:var(--c-muted)}
+
+.grid-wrap{flex:1 1 auto;min-height:0;overflow:auto;border:1px solid var(--c-border);border-radius:var(--r-md);background:var(--c-surface)}
+.grid{width:100%;border-collapse:collapse;table-layout:fixed}
+.grid th,.grid td{height:56px;padding:0 var(--s3);text-align:left;vertical-align:middle;border-bottom:1px solid var(--c-border);font-size:var(--t-sm);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.grid thead th{position:sticky;top:0;z-index:var(--z-sticky);height:36px;background:var(--c-bg);color:var(--c-muted);font-size:var(--t-cap);font-weight:600}
+.grid tbody tr:last-child td{border-bottom:0}
+.q-row{cursor:pointer}
+.q-row:hover{background:color-mix(in srgb, var(--c-cta) 6%, transparent)}
+.q-row.is-selected{background:color-mix(in srgb, var(--c-cta) 12%, transparent);box-shadow:inset 3px 0 0 var(--c-cta)}
+/* 新单：JS 加 `is-new`，4 秒后摘掉 —— 过渡让它"淡出"而不是啪一下消失 */
+.q-row.is-new{background:color-mix(in srgb, var(--c-st-claimed) 22%, transparent);transition:background var(--dur-slow) var(--ease-out)}
+.q-row[data-sla="over"]{background:color-mix(in srgb, var(--c-st-sla) 10%, transparent);box-shadow:inset 3px 0 0 var(--c-st-sla)}
+.q-row[data-sla="over"].is-selected{box-shadow:inset 3px 0 0 var(--c-st-sla),inset 0 0 0 1px var(--c-cta)}
+.q-no{border:0;background:transparent;padding:0;font-family:var(--font-mono);font-size:var(--t-sm);font-weight:700;letter-spacing:.02em;color:var(--c-primary);text-align:left}
+.q-no:hover{text-decoration:underline}
+.col-q{white-space:nowrap}
+.col-sla .sla-text{font-variant-numeric:tabular-nums}
+.q-row[data-sla="urgent"] .sla-text,.q-row[data-sla="over"] .sla-text{color:var(--c-st-sla);font-weight:700}
+.col-created,.col-assignee{color:var(--c-muted);font-variant-numeric:tabular-nums}
+
+/* 原因 / 状态徽章：底色只能由令牌混出（09 §1 硬规则；11 §2.3 的色表） */
+.badge-reason,.badge-status{border-color:transparent;color:var(--c-text);white-space:nowrap}
+.badge-reason[data-reason="no_citation"],.badge-reason[data-reason="low_conf"]{background:color-mix(in srgb, var(--c-st-open) 15%, transparent)}
+.badge-reason[data-reason="out_of_scope"]{background:color-mix(in srgb, var(--c-st-other) 15%, transparent)}
+.badge-reason[data-reason="user_request"]{background:color-mix(in srgb, var(--c-st-claimed) 15%, transparent)}
+.badge-status[data-status="open"]{background:color-mix(in srgb, var(--c-st-open) 15%, transparent)}
+.badge-status[data-status="claimed"]{background:color-mix(in srgb, var(--c-st-claimed) 15%, transparent)}
+.badge-status[data-status="escalated"]{background:color-mix(in srgb, var(--c-st-other) 15%, transparent)}
+.badge-status[data-status="closed"]{background:color-mix(in srgb, var(--c-st-closed) 15%, transparent)}
+.badge-lang{font-family:var(--font-mono);text-transform:uppercase}
+
+.empty,.empty-sm{padding:var(--s6) var(--s4);color:var(--c-muted);font-size:var(--t-sm);text-align:center}
+.empty-sm{padding:var(--s3);text-align:left}
+.pager{display:flex;align-items:center;gap:var(--s2);font-size:var(--t-sm);color:var(--c-muted)}
+.pager .btn{min-height:32px}
+.pager .pager-info{margin-left:auto;font-variant-numeric:tabular-nums}
+
+/* ───────────── 详情：三栏 ───────────── */
+
+.detail{display:grid;grid-template-columns:280px minmax(420px,1fr) 360px;gap:var(--s4);height:100%;min-height:0;padding:var(--s4)}
+.detail-col{min-width:0;min-height:0;overflow-y:auto;padding:var(--s3);border:1px solid var(--c-border);border-radius:var(--r-md);background:var(--c-surface)}
+
+/* 中栏是"对话流可滚、回复区固定"：`发送` / `关单` 永远贴在可视区底部，
+   1440×810 不用滚就点得到（工单 07#02 第七条的唯一硬指标） */
+.detail-main{display:flex;flex-direction:column;gap:var(--s2);overflow:hidden}
+.thread{flex:1 1 auto;min-height:0;overflow-y:auto;overscroll-behavior:contain;display:flex;flex-direction:column;gap:var(--s2);padding-right:var(--s1)}
+.detail-state{font-size:var(--t-sm);line-height:var(--lh-tight);overflow-wrap:anywhere}
+.detail-state:empty{display:none}
+.detail-state.is-error{padding:var(--s2) var(--s3);border-left:3px solid var(--c-st-sla);background:color-mix(in srgb, var(--c-st-sla) 8%, transparent)}
+.detail-state.is-loading{color:var(--c-muted)}
+
+.replier{flex:0 0 auto;display:flex;flex-direction:column;gap:var(--s2);padding-top:var(--s2);border-top:1px solid var(--c-border)}
+.replier .input{min-height:88px;max-height:200px;resize:vertical;font-size:var(--t-sm)}
+.replier-bar{display:flex;align-items:center;gap:var(--s2);flex-wrap:wrap}
+.replier-hint{flex:1 1 120px;font-size:var(--t-cap);color:var(--c-muted)}
+.replier-bar .btn{min-height:36px}
+.replier-meta{font-size:var(--t-cap);color:var(--c-muted);font-variant-numeric:tabular-nums}
+
+/* 左栏：元信息 + 操作 */
+.detail-left{display:flex;flex-direction:column;gap:var(--s3)}
+.meta-no{display:flex;align-items:center;gap:var(--s2);min-width:0}
+.meta-no .ticket-no{flex:1 1 auto;min-width:0;font-size:var(--t-sm);overflow-wrap:anywhere}
+.meta-list{display:flex;flex-direction:column;gap:var(--s1);margin:0}
+.meta-row{display:flex;justify-content:space-between;gap:var(--s2);padding-bottom:var(--s1);border-bottom:1px dashed var(--c-border);font-size:var(--t-sm)}
+.meta-row dt{flex:0 0 auto;color:var(--c-muted)}
+.meta-row dd{min-width:0;margin:0;text-align:right;overflow-wrap:anywhere}
+.meta-row dd[data-sla="urgent"],.meta-row dd[data-sla="over"]{color:var(--c-st-sla);font-weight:700}
+.meta-actions{display:flex;flex-direction:column;gap:var(--s2)}
+.meta-actions .btn{min-height:36px}
+/* 派发下拉（09#05 派发选人）：落在操作区里、跟按钮同宽同高，但**不做成按钮** ——
+   它是一个"选一个人"的控件，形态要能被一眼认出来。disabled 时半透明，
+   与 `.btn:disabled` 同一套观感（同一种"现在不能动"要说同一种话）。 */
+.meta-dispatch{display:flex;flex-direction:column;gap:var(--s1);padding-top:var(--s1);border-top:1px dashed var(--c-border)}
+.meta-dispatch-label{font-size:var(--t-cap);font-weight:600;color:var(--c-muted)}
+.meta-dispatch .c-select{width:100%;min-height:36px}
+.meta-dispatch .c-select:disabled{opacity:.6}
+.meta-note{font-size:var(--t-cap);color:var(--c-muted)}
+.meta-resolution{padding:var(--s2);border-left:3px solid var(--c-st-closed);background:color-mix(in srgb, var(--c-st-closed) 8%, transparent);font-size:var(--t-sm);overflow-wrap:anywhere}
+
+/* 右栏：AI 候选占位 + 引用聚合 */
+.detail-side{display:flex;flex-direction:column;gap:var(--s4)}
+.side-block h3{margin:0 0 var(--s2);font-size:var(--t-sm);font-weight:600;color:var(--c-muted)}
+#side-cites{display:flex;flex-direction:column;gap:var(--s2);margin:0;padding:0;list-style:none}
+.cite-row{display:flex;flex-direction:column;gap:2px;width:100%;padding:var(--s2);border:1px solid var(--c-border);border-radius:var(--r-sm);background:var(--c-bg);text-align:left}
+.cite-row:hover{border-color:var(--c-cta)}
+.cite-doc{font-size:var(--t-sm);font-weight:600;overflow-wrap:anywhere}
+.cite-meta{font-size:var(--t-cap);color:var(--c-muted);font-variant-numeric:tabular-nums}
+
+/* ───────────── 对话流 ───────────── */
+
+.t-msg{max-width:min(100%,760px);padding:var(--s3);border:1px solid var(--c-border);border-radius:var(--r-md);background:var(--c-bg);font-size:var(--t-sm)}
+.t-a{border-left:3px solid var(--c-cta)}
+/* 坐席本地追加的那条：与用户/AI 都区分开，并且必须自带"未外发"标签（工单 07#02 第四条） */
+.t-s{border-left:3px solid var(--c-st-claimed);background:color-mix(in srgb, var(--c-st-claimed) 6%, var(--c-surface))}
+.t-head{display:flex;align-items:center;gap:var(--s2);font-size:var(--t-cap);color:var(--c-muted)}
+.t-role{font-weight:600}
+.t-tag{padding:0 var(--s2);border-radius:var(--r-full);background:color-mix(in srgb, var(--c-st-claimed) 15%, transparent);color:var(--c-text)}
+.t-text{margin-top:var(--s1);white-space:pre-wrap;overflow-wrap:anywhere;line-height:var(--lh-body);user-select:text}
+.t-warn{margin-top:var(--s2);padding:var(--s1) var(--s2);border-radius:var(--r-sm);background:color-mix(in srgb, var(--c-st-sla) 12%, transparent);color:var(--c-st-sla);font-size:var(--t-cap);font-weight:600}
+.t-tools{margin-top:var(--s2);font-size:var(--t-cap);color:var(--c-muted)}
+.t-tools summary{cursor:pointer;user-select:none}
+.t-tools ul{margin:var(--s1) 0 0;padding-left:var(--s4)}
+.t-time{display:block;margin-top:var(--s1);font-size:var(--t-cap);color:var(--c-muted);text-align:right;font-variant-numeric:tabular-nums}
+/* 坐席端的角标用 CTA 色（用户端是 --u-primary-ink）：同一套 `.cite` 尺寸，只换色系 */
+body[data-app="console"] .cite{border-color:var(--c-cta);color:var(--c-cta)}
+
+/* 主按钮在坐席端是 CTA 蓝：`app.css` 的 `.btn-primary` 用的是用户端橙色 `--u-primary`，
+   而 09 §6 规定两端色系分家（坐席端 `--c-*`）。不覆盖的话"认领/发送"会在一屏冷色里跳出一块橙。 */
+body[data-app="console"] .btn-primary{background:var(--c-cta);border-color:var(--c-cta);color:var(--c-on-primary)}
+body[data-app="console"] .btn-primary:focus-visible{outline-color:var(--c-cta)}
+
+/* ───────────── Toast / 令牌闸门 / 模态 ───────────── */
+
+body[data-app="console"] .toast{position:fixed;left:50%;bottom:var(--s6);transform:translateX(-50%);max-width:60vw;z-index:var(--z-toast);padding:var(--s2) var(--s4);border-radius:var(--r-full);background:var(--c-primary);color:var(--c-on-primary);font-size:var(--t-sm);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+
+.gate{position:fixed;inset:0;z-index:var(--z-overlay);display:grid;place-items:center;padding:var(--s6);background:color-mix(in srgb, var(--c-primary) 88%, transparent)}
+.gate-card{display:flex;flex-direction:column;gap:var(--s3);width:min(420px,100%);padding:var(--s6);border:1px solid var(--c-border);border-radius:var(--r-lg);background:var(--c-surface)}
+.gate-title{margin:0;font-family:var(--font-display);font-size:var(--t-h2);font-weight:700}
+.gate-hint{margin:0;font-size:var(--t-sm);color:var(--c-muted);line-height:var(--lh-body)}
+.gate-label{font-size:var(--t-sm);font-weight:600}
+.gate-error{margin:0;font-size:var(--t-sm);color:var(--c-st-sla)}
+.gate-card code{font-family:var(--font-mono);font-size:var(--t-cap)}
+
+.cmodal{position:fixed;inset:0;z-index:var(--z-sheet);display:grid;place-items:center;padding:var(--s6);background:var(--u-scrim)}
+.cmodal-card{display:flex;flex-direction:column;width:min(560px,100%);max-height:80vh;border:1px solid var(--c-border);border-radius:var(--r-lg);background:var(--c-surface)}
+.cmodal-head{display:flex;align-items:center;gap:var(--s2);padding:var(--s3) var(--s4);border-bottom:1px solid var(--c-border)}
+.cmodal-title{flex:1 1 auto;min-width:0;margin:0;font-size:var(--t-title);font-weight:700;overflow-wrap:anywhere}
+.cmodal-body{display:flex;flex-direction:column;gap:var(--s3);min-height:0;overflow-y:auto;padding:var(--s4)}
+.cmodal-bar{display:flex;align-items:center;gap:var(--s2)}
+.cmodal-bar .gate-error{flex:1 1 auto}
+.cmodal-body .cite-card{padding:var(--s3);border:1px solid var(--c-border);border-radius:var(--r-md);background:var(--c-bg)}
+.cmodal-body .cite-text{margin:var(--s2) 0 0;white-space:pre-wrap;overflow-wrap:anywhere}
+
+.noscript{padding:var(--s6);font-size:var(--t-body);color:var(--c-text);background:var(--c-surface)}
+
+.btn-sm{min-height:32px;padding:0 var(--s3);font-size:var(--t-cap)}
+.empty .btn{margin-top:var(--s3)}
+
+/* ───────────── 管理面板：故障卡 / 看板（09#05） ───────────── */
+
+/* 与 `.work` 同一个网格格：面板打开时 `.work` 让位（`display:none`），
+   而不是叠在队列上面 —— 叠着会让底下的 5 秒轮询继续往看不见的 DOM 里画。 */
+.admin-panel{grid-area:work;min-width:0;min-height:0;overflow-y:auto;overscroll-behavior:contain;padding:var(--s4);background:var(--c-bg)}
+body[data-panel="admin"] .work{display:none}
+/* 导航底部的快捷键提示在面板里是**假话**（`j`/`k`/`Enter` 全部让位给表单），所以一并收起：
+   留着会让人在故障卡表单里按 `j` 然后奇怪为什么跳行。 */
+body[data-panel="admin"] .nav-foot{display:none}
+
+.admin-host{display:flex;flex-direction:column;gap:var(--s3);min-height:0}
+.admin-head{display:flex;align-items:center;flex-wrap:wrap;gap:var(--s3)}
+.admin-title{flex:1 1 auto;min-width:0;margin:0;font-family:var(--font-display);font-size:var(--t-title);font-weight:700}
+.admin-note{margin:0;font-size:var(--t-cap);line-height:var(--lh-body);color:var(--c-muted);overflow-wrap:anywhere}
+
+/* 面板自己的状态行：与 `.detail-state` 同形（同一类失败用同一个颜色与位置） */
+.admin-state{font-size:var(--t-sm);line-height:var(--lh-tight);overflow-wrap:anywhere}
+.admin-state:empty{display:none}
+.admin-state.is-error{padding:var(--s2) var(--s3);border-left:3px solid var(--c-st-sla);background:color-mix(in srgb, var(--c-st-sla) 8%, transparent)}
+.admin-state.is-loading{color:var(--c-muted)}
+
+/* 数字卡片：自动换列，1280 宽下四列、窄下来两列，不出现横向滚动 */
+.admin-cards{display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:var(--s3)}
+.admin-card{display:flex;flex-direction:column;gap:var(--s1);padding:var(--s3);border:1px solid var(--c-border);border-radius:var(--r-md);background:var(--c-surface)}
+.admin-card-label{font-size:var(--t-cap);font-weight:600;color:var(--c-muted)}
+.admin-card-value{font-family:var(--font-display);font-size:var(--t-h2);font-weight:700;line-height:var(--lh-tight);font-variant-numeric:tabular-nums;overflow-wrap:anywhere}
+.admin-card-note{font-size:var(--t-cap);color:var(--c-muted);font-variant-numeric:tabular-nums;overflow-wrap:anywhere}
+
+/* "面板未就绪"占位：虚线框，和真面板一眼区分开（别让人以为加载完了但内容是空的） */
+.admin-placeholder{display:flex;flex-direction:column;gap:var(--s2);align-items:flex-start;padding:var(--s6);border:1px dashed var(--c-border);border-radius:var(--r-md);background:var(--c-surface)}
+.admin-placeholder-title{margin:0;font-size:var(--t-title);font-weight:700}
+.admin-placeholder-hint{margin:0;font-size:var(--t-sm);line-height:var(--lh-body);color:var(--c-muted);overflow-wrap:anywhere}
+
+/* 待审反馈面板（09#04 反馈闭环）：七列表格 + 行内两个处置按钮。
+   摘录列是用户打的字，`overflow-wrap:anywhere` 与省略号都留着 —— 一条 200 字的中文摘录
+   会把整张表撑出横向滚动，而"看到一半被截断且没有提示"比换行更糟（title 上有全文）。 */
+.admin-report-wrap{overflow:auto;border:1px solid var(--c-border);border-radius:var(--r-md);background:var(--c-surface)}
+.admin-report-table{width:100%;border-collapse:collapse;table-layout:fixed}
+.admin-report-table th,.admin-report-table td{height:40px;padding:0 var(--s3);text-align:left;vertical-align:middle;border-bottom:1px solid var(--c-border);font-size:var(--t-sm);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.admin-report-table thead th{position:sticky;top:0;z-index:1;height:32px;background:var(--c-bg);color:var(--c-muted);font-size:var(--t-cap);font-weight:600}
+.admin-report-code{font-family:var(--font-mono);font-weight:700;letter-spacing:.04em}
+.admin-report-quote{max-width:0;overflow-wrap:anywhere}
+.admin-report-time,.admin-report-page{color:var(--c-muted);font-variant-numeric:tabular-nums}
+.admin-report-ops{white-space:nowrap}
+.admin-report-btn{min-height:30px;padding:0 var(--s3);border:1px solid var(--c-border);border-radius:var(--r-sm);background:var(--c-surface);color:var(--c-text);font-size:var(--t-cap);font-weight:600}
+.admin-report-btn+.admin-report-btn{margin-left:var(--s2)}
+.admin-report-btn:disabled{opacity:.5}
+.admin-report-btn.is-danger{color:var(--c-st-sla)}
+.admin-report-pager{display:flex;align-items:center;gap:var(--s2);flex-wrap:wrap}
+/* FAQ 草稿面板（`09#06`）：两节（草稿 / 未命中池）共用上面那套表格与按钮样式，
+   只多一个小节标题与"问题"列（问题与答案都是别人打的字，必须能换行且默认单行截断）。 */
+.admin-section-title{margin:var(--s4) 0 0;font-size:var(--t-title);font-weight:700}
+.admin-faq-question{max-width:0;overflow-wrap:anywhere}
+
+/* ───────────── 断点（11 §6） ───────────── */
+
+/* 1280–1439：中栏改用 minmax(0,1fr)，否则 420px 下限会把右栏挤出视口 → 横向滚动 */
+@media (max-width:1439px){
+  .detail{grid-template-columns:260px minmax(0,1fr) 320px}
+}
+/* <1280：引用栏收起（继续挤中栏会让对话读不了），顶栏常驻提示 */
+@media (max-width:1279px){
+  .detail{grid-template-columns:240px minmax(0,1fr)}
+  .detail-side{display:none}
+  .narrow-hint{display:inline}
+}
